@@ -75,6 +75,7 @@ class MovieViewSet(viewsets.ModelViewSet):
             )
         return queryset.distinct()
 
+
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
@@ -92,7 +93,9 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action == "list":
-            queryset = queryset.select_related("cinema_hall", "movie").prefetch_related(
+            queryset = queryset.select_related(
+                "cinema_hall", "movie"
+            ).prefetch_related(
                 "tickets"
             ).annotate(
                 tickets_available=F("cinema_hall__rows")
