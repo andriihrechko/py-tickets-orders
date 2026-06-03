@@ -109,7 +109,7 @@ class OrderListSerializer(OrderSerializer):
 
 
 class OrderCreateSerializer(OrderSerializer):
-    tickets = TicketSerializer(many=True, read_only=False, allow_empty=True)
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
 
     def create(self, validated_data):
         tickets = validated_data.pop("tickets", [])
