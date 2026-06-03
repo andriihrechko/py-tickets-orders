@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from django.db.models import F
+from django.db.models.aggregates import Count
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
@@ -79,6 +83,27 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
             return MovieSessionDetailSerializer
 
         return MovieSessionSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == "list":
+            queryset = queryset.select_related("cinema_hall", "movie").prefetch_related(
+                "tickets"
+            ).annotate(
+                tickets_available=F("cinema_hall__rows")
+                * F("cinema_hall__seats_in_row")
+                - Count("tickets")
+            )
+        movie = self.request.query_params.get("movie")
+        date = self.request.query_params.get("date")
+        if movie:
+            queryset = queryset.filter(movie__id=int(movie))
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d")
+            queryset = queryset.filter(
+                show_time__date=date
+            )
+        return queryset.distinct()
 
 
 class OrderViewSet(viewsets.ModelViewSet):
